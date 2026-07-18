@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>test - Game Server Management Panel</title>
+<link rel="icon" href="http://127.0.0.1:8050/panel/logo/mPtzOI1QbcJzII2SV8yPHZVzaOral43DKBGrpqct.png"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+:root {
+  --bg: #f6f3ee;
+  --bg2: #f0ece6;
+  --surface: #ffffff;
+  --surface2: #faf8f5;
+  --text: #1a1a1a;
+  --text2: #555;
+  --text3: #999;
+  --border: rgba(0,0,0,.06);
+  --shadow: rgba(0,0,0,.04);
+  --accent: #ff6b6b;
+  --accent2: #ffd93d;
+  --accent3: #6bcb77;
+  --accent4: #a66cff;
+  --nav-bg: rgba(246,243,238,.85);
+  --bg: #12121a;
+  --bg2: #1a1a24;
+  --surface: #1e1e2c;
+  --surface2: #252533;
+  --text: #e8e4e0;
+  --text2: #999;
+  --text3: #555;
+  --border: rgba(255,255,255,.06);
+  --shadow: rgba(0,0,0,.2);
+  --nav-bg: rgba(18,18,26,.85);
+  --card-bg: #1e1e2c;
+  --glow-color: rgba(255,107,107,.12);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI','Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;transition:background .4s,color .4s}
+@keyframes squiggle{0%,100%{d:path("M0,8 Q10,4 20,8 T40,8 T60,8 T80,8")}25%{d:path("M0,8 Q10,12 20,8 T40,8 T60,8 T80,8")}50%{d:path("M0,8 Q10,4 20,8 T40,8 T60,12 T80,8")}75%{d:path("M0,8 Q10,4 20,12 T40,8 T60,8 T80,8")}}
+.squiggle{animation:squiggle 2s ease-in-out infinite;fill:none;stroke:var(--accent);stroke-width:2;opacity:.4}
+nav{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:100;display:flex;align-items:center;justify-content:space-between;padding:10px 20px 10px 24px;background:var(--nav-bg);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:100px;width:calc(100% - 48px);max-width:1100px;transition:all .4s}
+.nav-brand{display:flex;align-items:center;gap:8px;font-size:18px;font-weight:700;text-decoration:none;color:var(--text)}
+.nav-brand .logo{font-size:22px}
+.nav-links{display:flex;align-items:center;gap:6px}
+.nav-links a{padding:6px 14px;border-radius:8px;color:var(--text2);text-decoration:none;font-size:13px;transition:all .3s}
+.nav-links a:hover{color:var(--text);background:var(--surface2)}
+.nav-actions{display:flex;align-items:center;gap:8px}
+.nav-actions .login-btn{padding:8px 18px;border-radius:9px;border:1px solid var(--border);background:transparent;color:var(--text2);text-decoration:none;font-size:13px;font-weight:500;transition:all .3s}
+.nav-actions .login-btn:hover{color:var(--text);border-color:var(--text3)}
+.nav-actions .get-started{padding:8px 18px;border-radius:9px;border:none;background:var(--accent);color:#fff;text-decoration:none;font-size:13px;font-weight:600;transition:all .3s;box-shadow:0 4px 12px var(--glow-color)}
+.nav-actions .get-started:hover{transform:translateY(-2px);box-shadow:0 6px 20px var(--glow-color)}
+.hero{max-width:1100px;margin:0 auto;padding:140px 24px 80px;position:relative}
+.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:48px;align-items:start}
+.hero h1{font-size:clamp(36px,5.5vw,64px);font-weight:800;line-height:1.1;margin-bottom:20px;letter-spacing:-.02em}
+.hero h1 .highlight{position:relative;display:inline-block}
+.hero h1 .highlight svg{position:absolute;bottom:-4px;left:-4px;width:calc(100% + 8px);height:16px;z-index:-1}
+.hero h1 .highlight svg path{animation:squiggle 2.5s ease-in-out infinite}
+.hero p{font-size:clamp(15px,1.4vw,18px);color:var(--text2);line-height:1.7;margin-bottom:32px;max-width:480px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:48px}
+.hero-btns .btn{padding:14px 28px;border-radius:14px;font-size:15px;font-weight:600;text-decoration:none;transition:all .3s;display:inline-flex;align-items:center;gap:8px}
+.hero-btns .btn-primary{background:var(--accent);color:#fff;border:none;box-shadow:0 4px 16px var(--glow-color)}
+.hero-btns .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 28px var(--glow-color)}
+.hero-btns .btn-secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border)}
+.hero-btns .btn-secondary:hover{background:var(--surface);border-color:var(--text3)}
+.hero-right{position:relative}
+.hero-illustration{position:relative;width:100%;aspect-ratio:1;max-width:360px;margin:0 auto}
+.floating-card{position:absolute;padding:16px 20px;border-radius:16px;background:var(--card-bg);border:1px solid var(--border);box-shadow:0 8px 32px var(--shadow);transition:all .4s;cursor:default}
+.floating-card:hover{transform:translateY(-4px) scale(1.02)}
+.floating-card .card-emoji{font-size:28px;margin-bottom:6px}
+.floating-card .card-label{font-size:12px;color:var(--text2)}
+.floating-card .card-value{font-size:18px;font-weight:700;color:var(--text)}
+.floating-card.c1{top:10%;left:-10%;animation:floaty 6s ease-in-out infinite}
+.floating-card.c2{top:35%;right:-15%;animation:floaty 7s ease-in-out infinite -2s}
+.floating-card.c3{bottom:15%;left:5%;animation:floaty 5s ease-in-out infinite -4s}
+.floating-card.c4{bottom:5%;right:0%;animation:floaty 8s ease-in-out infinite -1s;background:var(--accent);color:#fff;border-color:var(--accent)}
+.floating-card.c4 .card-label{color:rgba(255,255,255,.7)}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.stats-row{display:flex;gap:32px;flex-wrap:wrap;padding:24px 0;border-top:1px solid var(--border)}
+.stat-item{display:flex;align-items:center;gap:12px}
+.stat-item .stat-icon{width:40px;height:40px;border-radius:12px;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:18px}
+.stat-item .stat-num{font-size:22px;font-weight:700;line-height:1}
+.stat-item .stat-label{font-size:12px;color:var(--text2);margin-top:2px}
+.features{max-width:1100px;margin:0 auto;padding:80px 24px}
+.features-header{margin-bottom:48px;max-width:500px}
+.features-header .label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:12px}
+.features-header h2{font-size:clamp(26px,3.5vw,40px);font-weight:800;line-height:1.15;margin-bottom:12px}
+.features-header p{color:var(--text2);line-height:1.7;font-size:15px}
+.feature-masonry{column-count:2;column-gap:16px}
+.feature-card{break-inside:avoid;background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:24px;margin-bottom:16px;transition:all .3s;position:relative}
+.feature-card:hover{transform:translateY(-3px);box-shadow:0 12px 40px var(--shadow)}
+.feature-card .fc-icon{font-size:32px;margin-bottom:12px;display:block}
+.feature-card h3{font-size:16px;font-weight:600;margin-bottom:6px}
+.feature-card p{font-size:13px;color:var(--text2);line-height:1.6}
+.feature-card .fc-note{font-size:11px;color:var(--text3);margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.feature-card.tall{min-height:220px}
+.feature-card.short{min-height:140px}
+.feature-card.accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.feature-card.accent p{color:rgba(255,255,255,.7)}
+.feature-card.accent .fc-note{border-color:rgba(255,255,255,.15);color:rgba(255,255,255,.5)}
+.testimonial{max-width:1100px;margin:0 auto;padding:40px 24px 80px}
+.testimonial-card{background:var(--card-bg);border:1px solid var(--border);border-radius:24px;padding:36px;position:relative}
+.testimonial-card .quote{font-size:clamp(18px,2.2vw,26px);font-weight:500;line-height:1.4;margin-bottom:20px;position:relative;padding-left:28px}
+.testimonial-card .quote::before{content:'"';position:absolute;left:0;top:-8px;font-size:48px;color:var(--accent);font-weight:800;line-height:1}
+.testimonial-card .author{display:flex;align-items:center;gap:12px}
+.testimonial-card .author .av{width:40px;height:40px;border-radius:50%;background:var(--accent2);display:flex;align-items:center;justify-content:center;font-size:18px}
+.testimonial-card .author .name{font-size:14px;font-weight:600}
+.testimonial-card .author .handle{font-size:12px;color:var(--text2)}
+.cta-section{max-width:1100px;margin:0 auto;padding:0 24px 100px}
+.cta-card{background:var(--surface2);border:1px solid var(--border);border-radius:28px;padding:56px 48px;text-align:center;position:relative;overflow:hidden}
+.cta-card h2{font-size:clamp(24px,3vw,36px);font-weight:800;margin-bottom:12px}
+.cta-card p{color:var(--text2);font-size:15px;margin-bottom:28px;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.7}
+.cta-card .btn-primary{padding:14px 32px;border-radius:14px;font-size:15px;font-weight:600;background:var(--accent);color:#fff;border:none;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .3s;box-shadow:0 4px 16px var(--glow-color)}
+.cta-card .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 28px var(--glow-color)}
+.cta-card .float-emoji{position:absolute;font-size:32px;opacity:.15;pointer-events:none;animation:floaty 6s ease-in-out infinite}
+.cta-card .float-emoji.e1{top:20px;left:40px}
+.cta-card .float-emoji.e2{bottom:20px;right:40px;animation-delay:-3s}
+footer{text-align:center;padding:24px;color:var(--text3);font-size:13px;border-top:1px solid var(--border)}
+footer .heart{color:var(--accent);display:inline-block;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+.reveal{opacity:0;transform:translateY(24px);transition:all .7s cubic-bezier(.22,1,.36,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:100px}
+@media(max-width:800px){.hero-grid{grid-template-columns:1fr}.hero-right{display:none}.feature-masonry{column-count:1}nav{width:calc(100% - 24px);padding:8px 16px}.nav-links{display:none}.hero{padding-top:120px}}
+.topbar-centered{justify-content:center;gap:24px}
+.topbar-centered .nav-links{order:-1}
+.topbar-transparent{background:transparent!important;backdrop-filter:none!important;border-color:transparent!important}
+.topbar-minimal .nav-links{display:none}
+.topbar-minimal .nav-actions .login-btn{display:none}
+</style>
+</head>
+<body>
+
+<nav class="topbar-transparent">
+  <a href="http://127.0.0.1:8050" class="nav-brand"><span class="logo"><img src="http://127.0.0.1:8050/panel/logo/mPtzOI1QbcJzII2SV8yPHZVzaOral43DKBGrpqct.png" style="width:22px;height:22px;border-radius:4px;object-fit:cover;vertical-align:middle"></span> test</a>
+  <div class="nav-links">
+    <a href="http://127.0.0.1:8050">home</a>
+    <a href="#features">features</a>
+    <a href="#testimonial">testimonials</a>
+  </div>
+  <div class="nav-actions">
+    <a href="http://127.0.0.1:8050/auth/login" class="login-btn">log in</a>
+    <a href="http://127.0.0.1:8050/auth/login" class="get-started">get started</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid">
+    <div>
+      <h1>server management,<br><span class="highlight">simplified<svg viewBox="0 0 80 12" preserveAspectRatio="none"><path d="M0,8 Q10,4 20,8 T40,8 T60,8 T80,8" stroke="var(--accent)" fill="none" stroke-width="2.5" opacity=".4"/></svg></span></h1>
+      <p>Full-featured game server management panel with real-time console, file manager, database administration, and automated backups — all from your browser.</p>
+      <div class="hero-btns">
+        <a href="http://127.0.0.1:8050/auth/login" class="btn btn-primary"><i class="fas fa-arrow-right"></i> get started</a>
+        <a href="#features" class="btn btn-secondary"><i class="fas fa-chevron-down"></i> explore features</a>
+      </div>
+      <div class="stats-row">
+        <div class="stat-item"><div class="stat-icon"><i class="fas fa-server"></i></div><div><div class="stat-num">15</div><div class="stat-label">servers online</div></div></div>
+        <div class="stat-item"><div class="stat-icon"><i class="fas fa-users"></i></div><div><div class="stat-num">2.5K</div><div class="stat-label">active users</div></div></div>
+        <div class="stat-item"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div><div class="stat-num">99.9%</div><div class="stat-label">uptime SLA</div></div></div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-illustration">
+        <div class="floating-card c1"><div class="card-emoji"><i class="fas fa-desktop"></i></div><div class="card-label">servers running</div><div class="card-value">3 active</div></div>
+        <div class="floating-card c2"><div class="card-emoji"><i class="fas fa-database"></i></div><div class="card-label">last backup</div><div class="card-value">2m ago</div></div>
+        <div class="floating-card c3"><div class="card-emoji"><i class="fas fa-gamepad"></i></div><div class="card-label">players online</div><div class="card-value">23 connected</div></div>
+        <div class="floating-card c4"><div class="card-emoji"><i class="fas fa-check-circle"></i></div><div class="card-label">system status</div><div class="card-value">operational</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="features-header reveal">
+    <div class="label"><i class="fas fa-cube"></i> features</div>
+    <h2>everything you need to manage<br>your game servers</h2>
+    <p>A comprehensive panel designed for server administrators who need reliability and control.</p>
+  </div>
+  <div class="feature-masonry">
+        <div class="feature-card tall  reveal">
+      <span class="fc-icon"><i class="fas fa-terminal"></i></span>
+      <h3>live console</h3>
+      <p>Real-time terminal access to your server. Execute commands, monitor output, and manage your server directly from the browser.</p>
+      <div class="fc-note">full TTY support with command history</div>    </div>
+        <div class="feature-card short accent reveal">
+      <span class="fc-icon"><i class="fas fa-folder-open"></i></span>
+      <h3>file manager</h3>
+      <p>Full file system access with drag-and-drop upload, inline editing, and directory management.</p>
+      <div class="fc-note">edit config files directly in the browser</div>    </div>
+        <div class="feature-card short  reveal">
+      <span class="fc-icon"><i class="fas fa-database"></i></span>
+      <h3>databases</h3>
+      <p>Provision MySQL databases with one click. Includes phpMyAdmin for advanced management.</p>
+      <div class="fc-note">automatic user and permission setup</div>    </div>
+        <div class="feature-card tall  reveal">
+      <span class="fc-icon"><i class="fas fa-cloud-upload-alt"></i></span>
+      <h3>automated backups</h3>
+      <p>Schedule automatic backups with configurable retention. Manual snapshots available at any time.</p>
+      <div class="fc-note">daily, weekly, and manual backup modes</div>    </div>
+        <div class="feature-card short  reveal">
+      <span class="fc-icon"><i class="fas fa-puzzle-piece"></i></span>
+      <h3>plugin manager</h3>
+      <p>Upload, enable, disable, and configure plugins through an intuitive interface.</p>
+      <div class="fc-note">compatible with Bukkit, Spigot, and Paper</div>    </div>
+        <div class="feature-card tall accent reveal">
+      <span class="fc-icon"><i class="fas fa-shield-alt"></i></span>
+      <h3>authentication</h3>
+      <p>Multi-provider authentication with Google, Discord, and email/password login. Role-based access control included.</p>
+      <div class="fc-note">supports OAuth2, SSO, and 2FA</div>    </div>
+      </div>
+</section>
+
+<section class="testimonial" id="testimonial">
+  <div class="testimonial-card reveal">
+    <div class="quote">We evaluated several management panels before deploying HostIt across our infrastructure. The intuitive interface and reliable console access made it the clear choice for our community.</div>
+    <div class="author">
+      <div class="av"><i class="fas fa-user"></i></div>
+      <div><div class="name">Alex Chen</div><div class="handle">Server Administrator · MC Network</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="cta-card reveal">
+    <div class="float-emoji e1"><i class="fas fa-gamepad"></i></div>
+    <div class="float-emoji e2"><i class="fas fa-rocket"></i></div>
+    <h2>ready to get started?</h2>
+    <p>Deploy your first server in minutes. No credit card required.</p>
+    <a href="http://127.0.0.1:8050/auth/login" class="btn-primary"><i class="fas fa-arrow-right"></i> start free trial</a>
+  </div>
+</section>
+
+<footer>HostIt &copy; 2026 &mdash; Game Server Management Platform</footer>
+
+<script>
+const nav = document.querySelector('nav')
+let lastScroll = 0
+window.addEventListener('scroll', () => {
+  const s = window.scrollY
+  nav.style.transform = s > lastScroll && s > 100 ? 'translateX(-50%) translateY(-100%)' : 'translateX(-50%) translateY(0)'
+  lastScroll = s
+})
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible') })
+}, { threshold: .1 })
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el))
+</script>
+</body>
+</html>
