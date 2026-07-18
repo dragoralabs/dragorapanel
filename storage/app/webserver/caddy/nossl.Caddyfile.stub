@@ -1,0 +1,24 @@
+{{domain}} {
+    root * {{root}}/public
+    encode gzip
+
+    php_fastcgi 127.0.0.1:9000
+
+    file_server
+
+    @forbidden {
+        path *.env
+        path /.git*
+    }
+    deny @forbidden
+
+    header {
+        X-Real-IP {http.request.remote}
+        X-Forwarded-For {http.request.remote}
+        X-Forwarded-Proto {http.request.scheme}
+    }
+
+    log {
+        output file {{root}}/storage/logs/access.log
+    }
+}

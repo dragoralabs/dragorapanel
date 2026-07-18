@@ -1,0 +1,27 @@
+your-domain.com {
+    root * G:/make llm/public
+    encode gzip
+
+    php_fastcgi 127.0.0.1:9000
+
+    file_server
+
+    tls admin@your-domain.com
+
+    @forbidden {
+        path *.env
+        path /.git*
+    }
+    deny @forbidden
+
+    header {
+        X-Real-IP {http.request.remote}
+        X-Forwarded-For {http.request.remote}
+        X-Forwarded-Proto {http.request.scheme}
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    }
+
+    log {
+        output file G:/make llm/storage/logs/access.log
+    }
+}
