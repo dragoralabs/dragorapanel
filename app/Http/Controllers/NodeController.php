@@ -1,0 +1,219 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Allocation;
+use App\Models\Node;
+use App\Models\Server;
+use App\Models\Session;
+use App\Models\ActivityLog;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
+
+class NodeController extends Controller
+{
+    private function getUser(Request $request): ?\App\Models\User
+    {
+        $header = $request->header('Authorization', '');
+        if (!preg_match('/Bearer\s+(.+)$/i', $header, $m)) return null;
+        $session = Session::where('token', $m[1])->valid()->with('user')->first();
+        return $session?->user;
+    }
+
+    private function requireAdmin(Request $request): ?JsonResponse
+    {
+        $user = $this->getUser($request);
+        if (!$user) return response()->json(['success' => false, 'error' => 'Not authenticated.'], 401);
+        if (!$user->isAdmin()) return response()->json(['success' => false, 'error' => 'Forbidden.'], 403);
+        return null;
+    }
+
+    private function authenticateNode(Request $request): ?Node
+    {
+        $token = $request->bearerToken();
+        if (!$token) return null;
+        return Node::where('token', $token)->first();
+    }
+
+    // ── Panel Admin: CRUD ──
+
+    public function index(Request $request): JsonResponse
+    {
+        $block = $this->requireAdmin($request); if ($block) return $block;
+        $nodes = Node::with('location')->withCount('servers')->orderBy('name')->get();
+        return response()->json(['success' => true, 'nodes' => $nodes]);
+    }
+
+    public function show(Request $request, int $id): JsonResponse
+    {
+        $block = $this->requireAdmin($request); if ($block) return $block;
+        $node = Node::with('location')->withCount('servers')->find($id);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Node not found.'], 404);
+        return response()->json(['success' => true, 'node' => $node]);
+    }
+
+    public function store(Request $request): JsonResponse
+    {
+        $block = $this->requireAdmin($request); if ($block) return $block;
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'fqdn' => 'nullable|string|max:255',
+            'ip_address' => 'nullable|string|max:45',
+            'port' => 'nullable|integer|min:1|max:65535',
+            'location_id' => 'nullable|integer|exists:locations,id',
+            'memory_mb' => 'nullable|integer|min:1',
+            'storage_mb' => 'nullable|integer|min:1',
+        ]);
+        $data['token'] = Str::random(64);
+        $node = Node::create($data);
+        ActivityLog::create([
+            'action' => 'admin:node:create',
+            'user_id' => $this->getUser($request)->id,
+            'metadata' => json_encode(['target' => $node->name]),
+            'ip_address' => $request->ip(),
+        ]);
+        return response()->json(['success' => true, 'node' => $node, 'raw_token' => $data['token']]);
+    }
+
+    public function update(Request $request, int $id): JsonResponse
+    {
+        $block = $this->requireAdmin($request); if ($block) return $block;
+        $node = Node::find($id);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Node not found.'], 404);
+        $data = $request->validate([
+            'name' => 'nullable|string|max:255',
+            'fqdn' => 'nullable|string|max:255',
+            'ip_address' => 'nullable|string|max:45',
+            'port' => 'nullable|integer|min:1|max:65535',
+            'location_id' => 'nullable|integer|exists:locations,id',
+            'memory_mb' => 'nullable|integer|min:1',
+            'storage_mb' => 'nullable|integer|min:1',
+            'status' => 'nullable|string|in:online,offline',
+        ]);
+        $node->update(array_filter($data));
+        return response()->json(['success' => true, 'node' => $node->fresh()]);
+    }
+
+    public function destroy(Request $request, int $id): JsonResponse
+    {
+        $block = $this->requireAdmin($request); if ($block) return $block;
+        $node = Node::find($id);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Node not found.'], 404);
+        Server::where('node_id', $id)->update(['node_id' => null]);
+        Allocation::where('node_id', $id)->update(['node_id' => null]);
+        $node->delete();
+        ActivityLog::create([
+            'action' => 'admin:node:delete',
+            'user_id' => $this->getUser($request)->id,
+            'metadata' => json_encode(['target' => $node->name]),
+            'ip_address' => $request->ip(),
+        ]);
+        return response()->json(['success' => true]);
+    }
+
+    public function regenerate(Request $request, int $id): JsonResponse
+    {
+        $block = $this->requireAdmin($request); if ($block) return $block;
+        $node = Node::find($id);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Node not found.'], 404);
+        $node->update(['token' => Str::random(64)]);
+        return response()->json(['success' => true, 'raw_token' => $node->fresh()->token]);
+    }
+
+    // ── Agent-Facing Endpoints ──
+
+    public function agentPing(Request $request): JsonResponse
+    {
+        $node = $this->authenticateNode($request);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Invalid token.'], 401);
+        $node->update(['status' => 'online', 'last_seen_at' => now()]);
+        return response()->json(['success' => true, 'node' => $node->fresh()]);
+    }
+
+    public function agentReport(Request $request): JsonResponse
+    {
+        $node = $this->authenticateNode($request);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Invalid token.'], 401);
+        $data = $request->validate([
+            'cpu_percent' => 'nullable|numeric|min:0|max:100',
+            'memory_used_mb' => 'nullable|integer|min:0',
+            'disk_used_mb' => 'nullable|integer|min:0',
+            'cpu_cores' => 'nullable|integer|min:0',
+        ]);
+        $node->update(array_merge($data, [
+            'status' => 'online',
+            'last_seen_at' => now(),
+        ]));
+        return response()->json(['success' => true]);
+    }
+
+    public function agentServers(Request $request): JsonResponse
+    {
+        $node = $this->authenticateNode($request);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Invalid token.'], 401);
+        $servers = Server::where('node_id', $node->id)->get();
+        return response()->json(['success' => true, 'servers' => $servers]);
+    }
+
+    public function agentServerCommands(Request $request, int $serverId): JsonResponse
+    {
+        $node = $this->authenticateNode($request);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Invalid token.'], 401);
+        $server = Server::where('id', $serverId)->where('node_id', $node->id)->first();
+        if (!$server) return response()->json(['success' => false, 'error' => 'Server not found on this node.'], 404);
+        $commands = $server->shiftCommands();
+        return response()->json(['success' => true, 'commands' => $commands]);
+    }
+
+    public function agentServerStatus(Request $request, int $serverId): JsonResponse
+    {
+        $node = $this->authenticateNode($request);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Invalid token.'], 401);
+        $server = Server::where('id', $serverId)->where('node_id', $node->id)->first();
+        if (!$server) return response()->json(['success' => false, 'error' => 'Server not found on this node.'], 404);
+        $data = $request->validate([
+            'status' => 'required|string|in:starting,running,stopping,offline,crashed',
+            'memory_used_mb' => 'nullable|integer',
+            'cpu_percent' => 'nullable|numeric',
+        ]);
+        $server->update($data);
+        Cache::increment('servers:version');
+        return response()->json(['success' => true]);
+    }
+
+    public function agentServerLog(Request $request, int $serverId): JsonResponse
+    {
+        $node = $this->authenticateNode($request);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Invalid token.'], 401);
+        $server = Server::where('id', $serverId)->where('node_id', $node->id)->first();
+        if (!$server) return response()->json(['success' => false, 'error' => 'Server not found on this node.'], 404);
+        $data = $request->validate(['line' => 'required|string']);
+        $server->appendLog($data['line']);
+        return response()->json(['success' => true]);
+    }
+
+    // ── Allocation helpers for agent ──
+
+    public function agentAllocatePort(Request $request): JsonResponse
+    {
+        $node = $this->authenticateNode($request);
+        if (!$node) return response()->json(['success' => false, 'error' => 'Invalid token.'], 401);
+        $data = $request->validate(['ip' => 'required|string|max:45']);
+        $used = Allocation::where('node_id', $node->id)->pluck('port')->toArray();
+        $port = null;
+        for ($p = 25565; $p <= 26000; $p++) {
+            if (!in_array($p, $used)) { $port = $p; break; }
+        }
+        if (!$port) return response()->json(['success' => false, 'error' => 'No ports available.'], 400);
+        $alloc = Allocation::create([
+            'node_id' => $node->id,
+            'location_id' => $node->location_id,
+            'ip' => $data['ip'],
+            'port' => $port,
+            'assigned' => false,
+        ]);
+        return response()->json(['success' => true, 'allocation' => $alloc]);
+    }
+}

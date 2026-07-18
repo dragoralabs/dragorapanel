@@ -1,0 +1,135 @@
+/* ── Explation Tab Styles ── */
+#explationApp {
+  max-width: 900px;
+  padding-bottom: 40px;
+}
+#explationApp .ex-hero {
+  background: linear-gradient(135deg, rgba(91,138,245,.1), rgba(124,92,252,.05));
+  border: 1px solid rgba(91,138,245,.12);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+#explationApp .ex-hero h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  background: linear-gradient(135deg, #5b8af5, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+#explationApp .ex-hero p {
+  font-size: 14px;
+  color: var(--text2);
+  max-width: 500px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+#explationApp .ex-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+#explationApp .ex-card {
+  background: rgba(19,19,28,.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,.04);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all .25s cubic-bezier(.22,1,.36,1);
+}
+#explationApp .ex-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(91,138,245,.15);
+  box-shadow: 0 8px 32px rgba(0,0,0,.12);
+}
+#explationApp .ex-card .ex-icon {
+  font-size: 28px;
+  margin-bottom: 10px;
+  display: block;
+}
+#explationApp .ex-card h3 {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+#explationApp .ex-card p {
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.5;
+}
+#explationApp .ex-card .ex-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 8px;
+}
+#explationApp .ex-card .ex-tag.info {
+  background: rgba(91,138,245,.12);
+  color: #5b8af5;
+}
+#explationApp .ex-card .ex-tag.success {
+  background: rgba(52,211,153,.12);
+  color: #34d399;
+}
+#explationApp .ex-card .ex-tag.warning {
+  background: rgba(251,191,36,.12);
+  color: #fbbf24;
+}
+#explationApp .ex-section {
+  margin-top: 24px;
+}
+#explationApp .ex-section h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#explationApp .ex-info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.04);
+  border-radius: 10px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  color: var(--text2);
+}
+#explationApp .ex-info-row .ex-label {
+  font-weight: 600;
+  color: var(--text);
+  min-width: 120px;
+}
+#explationApp .ex-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+}
+#explationApp .ex-badge.plugin {
+  background: rgba(91,138,245,.1);
+  color: #5b8af5;
+  border: 1px solid rgba(91,138,245,.15);
+}
+#explationApp .ex-badge.dpp {
+  background: rgba(124,92,252,.1);
+  color: #a78bfa;
+  border: 1px solid rgba(124,92,252,.15);
+}
+
+[data-theme="light"] #explationApp .ex-card {
+  background: rgba(255,255,255,.8);
+}
