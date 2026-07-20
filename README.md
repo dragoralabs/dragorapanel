@@ -1,45 +1,138 @@
-# Add "add-apt-repository" command
-apt -y install software-properties-common curl apt-transport-https ca-certificates gnupg unzip
+# 🚀 DragoraPanel Installation Guide
 
-# Add additional repositories for PHP (Ubuntu 22.04)
-LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
+> Install **DragoraPanel** on **Ubuntu 22.04+** using **Nginx, PHP 8.3, MariaDB/MySQL, and Redis**.
 
-# Add Redis official APT repository
-curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
-echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+---
 
-# Update repositories list
+##  Requirements
+
+- Ubuntu 22.04 or newer
+- Root or sudo access
+- Domain name (recommended)
+- SSL certificate (recommended)
+
+---
+
+# 1️ Install Required Packages
+
+```bash
+# Install required utilities
 apt update
+apt -y install software-properties-common curl apt-transport-https ca-certificates gnupg unzip
+```
 
-# Install Dependencies
-apt -y install php8.3 php8.3-{common,cli,gd,mysql,mbstring,bcmath,xml,fpm,curl,zip} mariadb-server nginx tar unzip git redis-server
+---
 
-curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
+# 2️ Add PHP Repository
 
+```bash
+LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php
+```
+
+---
+
+# 3️ Add Redis Repository
+
+```bash
+curl -fsSL https://packages.redis.io/gpg | sudo gpg --dearmor -o /usr/share/keyrings/redis-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/redis-archive-keyring.gpg] https://packages.redis.io/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/redis.list
+```
+
+---
+
+# 4️ Update Package Lists
+
+```bash
+apt update
+```
+
+---
+
+# 5️ Install Dependencies
+
+```bash
+apt -y install \
+php8.3 \
+php8.3-{common,cli,gd,mysql,mbstring,bcmath,xml,fpm,curl,zip} \
+mariadb-server \
+nginx \
+tar \
+unzip \
+git \
+redis-server
+```
+
+---
+
+# 6️ Install Composer
+
+```bash
+curl -sS https://getcomposer.org/installer | sudo php -- \
+--install-dir=/usr/local/bin \
+--filename=composer
+```
+
+---
+
+# 7️ Download DragoraPanel
+
+```bash
 mkdir -p /var/www/dragorapanel
 cd /var/www/dragorapanel
 
-curl -Lo panel.zip https://github.com/dragoralabs/dragorapanel/releases/latest/download/panel.zip
+curl -Lo panel.zip \
+https://github.com/dragoralabs/dragorapanel/releases/latest/download/panel.zip
+
 unzip panel.zip
+
 chmod -R 755 storage/* bootstrap/cache/
+```
 
-# If using MariaDB (v11.0.0+) (This is the default when installing panel by following the documentation.)
+---
+
+# 8️ Create Database
+
+### MariaDB
+
+```bash
 mariadb -u root -p
+```
 
-# If using MySQL
+### MySQL
+
+```bash
 mysql -u root -p
+```
 
-CREATE USER 'dragorapanel'@'127.0.0.1' IDENTIFIED BY 'yourPassword';
-CREATE DATABASE dragorapanel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-GRANT ALL PRIVILEGES ON dragorapanel.* TO 'dragorapanel'@'127.0.0.1' WITH GRANT OPTION;
+Run:
+
+```sql
+CREATE DATABASE dragorapanel
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_unicode_ci;
+
+CREATE USER 'dragorapanel'@'127.0.0.1'
+IDENTIFIED BY 'yourPassword';
+
+GRANT ALL PRIVILEGES
+ON dragorapanel.*
+TO 'dragorapanel'@'127.0.0.1'
+WITH GRANT OPTION;
+
 FLUSH PRIVILEGES;
+```
 
+---
+
+# 9️ Install Panel
+
+```bash
 cp .env.example .env
 
-COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader
-
-# Only run the command below if you are installing this Panel for
-# the first time and do not have any Panel data in the database.
+COMPOSER_ALLOW_SUPERUSER=1 composer install \
+--no-dev \
+--optimize-autoloader
 
 php artisan key:generate --force
 
@@ -49,20 +142,51 @@ php artisan storage:link
 
 npm install
 npm run build
+```
 
-Login- admin@hostit.local / admin123
+---
 
-# If using NGINX, Apache or Caddy (not on RHEL / Rocky Linux / AlmaLinux)
+#  Default Login
+
+> **Change these immediately after logging in.**
+
+| Email | Password |
+|-------|----------|
+| admin@hostit.local | admin123 |
+
+---
+
+# 10 Set Permissions
+
+### Ubuntu / Debian (Nginx)
+
+```bash
 chown -R www-data:www-data /var/www/dragorapanel/*
+```
 
-# If using NGINX on RHEL / Rocky Linux / AlmaLinux
+### RHEL / Rocky / AlmaLinux (Nginx)
+
+```bash
 chown -R nginx:nginx /var/www/dragorapanel/*
+```
 
-# If using Apache on RHEL / Rocky Linux / AlmaLinux
+### Apache (RHEL / Rocky / AlmaLinux)
+
+```bash
 chown -R apache:apache /var/www/dragorapanel/*
+```
 
+---
+
+# 1️1 Create Queue Worker
+
+Create:
+
+```
 /etc/systemd/system/dragorapanel.service
+```
 
+```ini
 [Unit]
 Description=DragoraPanel Queue Worker
 After=network.target redis.service
@@ -71,21 +195,44 @@ After=network.target redis.service
 User=www-data
 Group=www-data
 WorkingDirectory=/var/www/dragorapanel
-ExecStart=/usr/bin/php artisan queue:work --queue=high,default --sleep=3 --tries=3 --timeout=300
+
+ExecStart=/usr/bin/php artisan queue:work \
+--queue=high,default \
+--sleep=3 \
+--tries=3 \
+--timeout=300
+
 Restart=always
 RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
+```
 
+Enable services:
+
+```bash
 sudo systemctl enable --now redis-server
-
 sudo systemctl enable --now dragorapanel.service
+```
 
-rm /etc/nginx/sites-enabled/default
+---
 
+# 12 Configure Nginx
+
+Remove the default site:
+
+```bash
+sudo rm /etc/nginx/sites-enabled/default
+```
+
+Create:
+
+```
 /etc/nginx/sites-available/dragorapanel.conf
+```
 
+```nginx
 server {
     listen 80;
     server_name {{domain}};
@@ -98,27 +245,31 @@ server {
 
     ssl_certificate     {{ssl_cert}};
     ssl_certificate_key {{ssl_key}};
-    ssl_protocols       TLSv1.2 TLSv1.3;
-    ssl_ciphers         HIGH:!aNULL:!MD5;
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
     ssl_prefer_server_ciphers on;
-    ssl_session_cache   shared:SSL:10m;
+
+    ssl_session_cache shared:SSL:10m;
     ssl_session_timeout 10m;
 
     root {{root}}/public;
     index index.php;
 
-    access_log  {{root}}/storage/logs/access.log;
-    error_log   {{root}}/storage/logs/error.log;
+    access_log {{root}}/storage/logs/access.log;
+    error_log  {{root}}/storage/logs/error.log;
 
     location / {
         try_files $uri $uri/ /index.php?$query_string;
     }
 
     location ~ \.php$ {
-        fastcgi_pass   127.0.0.1:9000;
-        fastcgi_index  index.php;
-        fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
-        include        fastcgi_params;
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+
+        include fastcgi_params;
+
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
     }
 
     location ~ /\.(?!well-known).* {
@@ -130,20 +281,63 @@ server {
     }
 
     gzip on;
-    gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript image/svg+xml;
     gzip_min_length 256;
+
+    gzip_types
+        text/plain
+        text/css
+        application/json
+        application/javascript
+        text/xml
+        application/xml
+        text/javascript
+        image/svg+xml;
+
     gzip_vary on;
 
     client_max_body_size 100m;
+
     proxy_set_header X-Real-IP $remote_addr;
     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     proxy_set_header X-Forwarded-Proto $scheme;
     proxy_set_header Host $host;
 }
+```
 
+---
 
-# You do not need to symlink this file if you are using RHEL, Rocky Linux, or AlmaLinux.
-sudo ln -s /etc/nginx/sites-available/dragorapanel.conf /etc/nginx/sites-enabled/dragorapanel.conf
+# 13 Enable Site
 
-# You need to restart nginx regardless of OS.
+Ubuntu/Debian:
+
+```bash
+sudo ln -s \
+/etc/nginx/sites-available/dragorapanel.conf \
+/etc/nginx/sites-enabled/dragorapanel.conf
+```
+
+> Skip this step on **RHEL**, **Rocky Linux**, or **AlmaLinux**.
+
+---
+
+# 1️4 Restart Nginx
+
+```bash
 sudo systemctl restart nginx
+```
+
+---
+
+# ✅ Installation Complete
+
+Your DragoraPanel installation should now be available at:
+
+```
+https://your-domain.com
+```
+
+---
+
+## Welcome to DragoraPanel!
+
+If you encounter any issues, please open an issue on the GitHub repository.
