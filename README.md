@@ -1,23 +1,32 @@
-# Update!!!
 
-------
+# OUR FUTURE: OPEN SOURCE, FOREVER.
 
-## We Are Stopping Panel Open Source Code
+We want to make one thing clear: **DragoraPanel is not going back to being closed source.** We believe in transparency, community contributions, and giving developers the freedom to build their own solutions.
 
-
-
-| ⚠️ Reason for the Switch | 🚀 What Now? |
+| ⚠️ Challenges We Faced | 🚀 What Comes Next? |
 | :--- | :--- |
-| **1.** Hard to install manually. | **1.** We give you free panel hosting with zero setup. Just connect your domain and you are done. |
-| **2.** Code size is over 100MB. | **2.** It is much easier to maintain. |
-| **3.** Code is very heavy to run locally. | **3.** You get full system info to monitor panel usage, etc. |
-| **4.** We added a license to the panel, so we have to manage it this way. | **4.** You can easily upgrade your panel specifications. |
-| | **5.** The hosting panel itself is free. Since we added a license, we cover the panel hosting costs. You can still create plugins and add server nodes etc , we just don't provide license for free right now. |
-| | **6.** You will need to self-host the node system, as we cannot afford to host nodes for free. :( |
+| **1.** Manual installation was difficult. | **1.** Free panel hosting with zero setup. Connect your domain, and you're ready to go. |
+| **2.** The codebase grew beyond 100 MB. | **2.** A more manageable and maintainable system. |
+| **3.** Running the panel locally required significant resources. | **3.** System information and resource monitoring to help you track panel usage. |
+| **4.** Licensing introduced additional management and hosting costs. | **4.** Options to upgrade your panel specifications as your needs grow. |
+| | **5.** The panel hosting itself remains free. Due to licensing and operational costs, free licenses are not currently available. |
+| | **6.** You'll need to self-host your own nodes, as we cannot afford to provide free node hosting. |
 
-------
+━━━━━━━━━━━━━━━━━━━━━━
 
-# Coming Soon :)
+## OUR COMMITMENT
 
+**DragoraPanel will remain open source.**
 
-### Made with ❤ Dragoralabs :)
+We are not abandoning open source, and we have no plans to return to a closed-source model. Our goal is to make the project easier to access, maintain, and develop while building a sustainable hosting system.
+
+- **Open source stays.**
+- Community contributions stay welcome.
+- Plugins and custom integrations remain part of the vision.
+- You can build and self-host your own node infrastructure.
+
+We may change how we host, license, and maintain the platform, but **we will not close the source code.**
+
+Made with 💖 by **DragoraLabs Studio**
+
+*Building in public. Growing together. Open source for the long run.*
