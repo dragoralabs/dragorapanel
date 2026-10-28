@@ -1,0 +1,270 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return request.auth != null &&
+        request.auth.token.email_verified == true && (
+          request.auth.token.email == 'dragoralabs@gmail.com' ||
+          request.auth.token.email == 'no3035564@gmail.com' ||
+          request.auth.token.email == 'nexahost.com@gmail.com' ||
+          request.auth.token.email == 'jigaragrawal607@gmail.com' ||
+          exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        );
+    }
+
+    // 3. Entity Validation Blueprints
+    function isValidAdminRecord(data) {
+      return data.keys().hasOnly(['uid', 'role', 'createdAt', 'updatedAt']) &&
+        isValidId(data.uid) &&
+        data.role is string &&
+        data.role in ['super_admin', 'admin'] &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidUserNodeConfig(data) {
+      return data.keys().hasOnly([
+          'ownerUid',
+          'displayName',
+          'customRam',
+          'selectedWorkload',
+          'billingCycle',
+          'selectedRegion',
+          'selectedEngine',
+          'savedManifests',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidId(data.ownerUid) &&
+        data.ownerUid == request.auth.uid &&
+        data.displayName is string && data.displayName.size() <= 120 &&
+        data.customRam is number && data.customRam >= 4 && data.customRam <= 512 &&
+        data.selectedWorkload is string && data.selectedWorkload in ['cloud', 'highfreq', 'baremetal'] &&
+        data.billingCycle is string && data.billingCycle in ['monthly', 'quarterly', 'annual'] &&
+        data.selectedRegion is string && data.selectedRegion.size() <= 64 &&
+        data.selectedEngine is string && data.selectedEngine.size() <= 200 &&
+        data.savedManifests is list && data.savedManifests.size() <= 20 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidSiteCoreText(data) {
+      return isValidId(data.authorUid) &&
+        data.theme is string &&
+        data.theme in ['default', 'christmas', 'halloween', 'void', 'easter', 'cyber'] &&
+        data.systemStatus is string && data.systemStatus.size() <= 120 &&
+        data.latency is string && data.latency.size() <= 60 &&
+        data.hubButtonText is string && data.hubButtonText.size() <= 120 &&
+        data.copyText is string && data.copyText.size() <= 200 &&
+        data.brandMain is string && data.brandMain.size() <= 120 &&
+        data.brandAccent is string && data.brandAccent.size() <= 120 &&
+        data.brandSubtitle is string && data.brandSubtitle.size() <= 160 &&
+        data.pageTitle is string && data.pageTitle.size() <= 200 &&
+        data.heroKicker is string && data.heroKicker.size() <= 400 &&
+        data.heroDescription is string && data.heroDescription.size() <= 1200 &&
+        data.primaryCtaText is string && data.primaryCtaText.size() <= 120 &&
+        data.secondaryCtaText is string && data.secondaryCtaText.size() <= 120 &&
+        data.clusterBadgeLabel is string && data.clusterBadgeLabel.size() <= 120 &&
+        data.clusterBadgeValue is string && data.clusterBadgeValue.size() <= 120;
+    }
+
+    function isValidSiteSectionText(data) {
+      return data.plansSectionKicker is string && data.plansSectionKicker.size() <= 200 &&
+        data.plansSectionTitle is string && data.plansSectionTitle.size() <= 200 &&
+        data.plansSectionSubtitle is string && data.plansSectionSubtitle.size() <= 600 &&
+        data.customBuilderTitle is string && data.customBuilderTitle.size() <= 200 &&
+        data.nodesSectionKicker is string && data.nodesSectionKicker.size() <= 200 &&
+        data.nodesSectionTitle is string && data.nodesSectionTitle.size() <= 200 &&
+        data.nodesSectionSubtitle is string && data.nodesSectionSubtitle.size() <= 600 &&
+        data.archSectionKicker is string && data.archSectionKicker.size() <= 200 &&
+        data.archSectionTitle is string && data.archSectionTitle.size() <= 200 &&
+        data.slaSectionKicker is string && data.slaSectionKicker.size() <= 200 &&
+        data.slaSectionTitle is string && data.slaSectionTitle.size() <= 200 &&
+        data.slaSectionBadge is string && data.slaSectionBadge.size() <= 200 &&
+        data.teamSectionTitle is string && data.teamSectionTitle.size() <= 200 &&
+        data.teamSectionSubtitle is string && data.teamSectionSubtitle.size() <= 300 &&
+        data.footerCopyright is string && data.footerCopyright.size() <= 300 &&
+        data.sticker1Line1 is string && data.sticker1Line1.size() <= 80 &&
+        data.sticker1Line2 is string && data.sticker1Line2.size() <= 80 &&
+        data.sticker1Badge is string && data.sticker1Badge.size() <= 40 &&
+        data.sticker2Text is string && data.sticker2Text.size() <= 120 &&
+        data.sticker3Emoji is string && data.sticker3Emoji.size() <= 32 &&
+        data.sticker3Text is string && data.sticker3Text.size() <= 120 &&
+        data.sticker4Text is string && data.sticker4Text.size() <= 160;
+    }
+
+    function isValidSiteSeoText(data) {
+      return data.loginTitle is string && data.loginTitle.size() <= 120 &&
+        data.loginAccent is string && data.loginAccent.size() <= 120 &&
+        data.loginSubtitle is string && data.loginSubtitle.size() <= 240 &&
+        data.seoSiteName is string && data.seoSiteName.size() <= 160 &&
+        data.seoHomeTitle is string && data.seoHomeTitle.size() <= 240 &&
+        data.seoHomeDescription is string && data.seoHomeDescription.size() <= 600 &&
+        data.seoHomeKeywords is string && data.seoHomeKeywords.size() <= 600 &&
+        data.seoLoginTitle is string && data.seoLoginTitle.size() <= 240 &&
+        data.seoLoginDescription is string && data.seoLoginDescription.size() <= 600 &&
+        data.seoLoginKeywords is string && data.seoLoginKeywords.size() <= 600 &&
+        data.seoAdminTitle is string && data.seoAdminTitle.size() <= 240 &&
+        data.seoAdminDescription is string && data.seoAdminDescription.size() <= 600 &&
+        data.seoAdminKeywords is string && data.seoAdminKeywords.size() <= 600 &&
+        data.laws is list && data.laws.size() <= 20 &&
+        data.osImages is list && data.osImages.size() <= 20 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidSiteTextConfig(data) {
+      return data.keys().hasOnly([
+          'authorUid',
+          'theme',
+          'systemStatus',
+          'latency',
+          'hubButtonText',
+          'copyText',
+          'brandMain',
+          'brandAccent',
+          'brandSubtitle',
+          'pageTitle',
+          'heroKicker',
+          'heroDescription',
+          'primaryCtaText',
+          'secondaryCtaText',
+          'clusterBadgeLabel',
+          'clusterBadgeValue',
+          'plansSectionKicker',
+          'plansSectionTitle',
+          'plansSectionSubtitle',
+          'customBuilderTitle',
+          'nodesSectionKicker',
+          'nodesSectionTitle',
+          'nodesSectionSubtitle',
+          'archSectionKicker',
+          'archSectionTitle',
+          'slaSectionKicker',
+          'slaSectionTitle',
+          'slaSectionBadge',
+          'teamSectionTitle',
+          'teamSectionSubtitle',
+          'footerCopyright',
+          'sticker1Line1',
+          'sticker1Line2',
+          'sticker1Badge',
+          'sticker2Text',
+          'sticker3Emoji',
+          'sticker3Text',
+          'sticker4Text',
+          'loginTitle',
+          'loginAccent',
+          'loginSubtitle',
+          'seoSiteName',
+          'seoHomeTitle',
+          'seoHomeDescription',
+          'seoHomeKeywords',
+          'seoLoginTitle',
+          'seoLoginDescription',
+          'seoLoginKeywords',
+          'seoAdminTitle',
+          'seoAdminDescription',
+          'seoAdminKeywords',
+          'laws',
+          'osImages',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        isValidSiteCoreText(data) &&
+        isValidSiteSectionText(data) &&
+        isValidSiteSeoText(data);
+    }
+
+    // 4. Collection Rules: /admins/{adminId}
+    match /admins/{adminId} {
+      allow get: if request.auth != null && request.auth.token.email_verified == true && isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list: if false;
+      allow create: if isAdmin() &&
+        isValidId(adminId) &&
+        isValidAdminRecord(incoming()) &&
+        incoming().uid == adminId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if (
+        isAdmin() &&
+        isValidId(adminId) &&
+        isValidAdminRecord(incoming()) &&
+        incoming().uid == existing().uid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time
+      );
+      allow delete: if isAdmin() && isValidId(adminId);
+    }
+
+    // 5. Collection Rules: /user_configs/{userId}
+    match /user_configs/{userId} {
+      allow get: if isValidId(userId) && (isOwner(userId) || isAdmin());
+      allow list: if false;
+      allow create: if isOwner(userId) &&
+        isValidId(userId) &&
+        isValidUserNodeConfig(incoming()) &&
+        incoming().ownerUid == userId &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if (
+        isSignedIn() &&
+        isValidId(userId) &&
+        isValidUserNodeConfig(incoming()) &&
+        (isOwner(userId) || isAdmin()) &&
+        incoming().ownerUid == existing().ownerUid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time
+      );
+      allow delete: if isValidId(userId) && (isOwner(userId) || isAdmin());
+    }
+
+    // 6. Collection Rules: /site_config/{configId}
+    match /site_config/{configId} {
+      allow get: if isValidId(configId);
+      allow list: if false;
+      allow create: if isAdmin() &&
+        isValidId(configId) &&
+        isValidSiteTextConfig(incoming()) &&
+        incoming().authorUid == request.auth.uid &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if (
+        isAdmin() &&
+        isValidId(configId) &&
+        isValidSiteTextConfig(incoming()) &&
+        incoming().authorUid == existing().authorUid &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time
+      );
+      allow delete: if isAdmin() && isValidId(configId);
+    }
+  }
+}

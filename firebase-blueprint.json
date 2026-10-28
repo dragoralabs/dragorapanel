@@ -1,0 +1,241 @@
+{
+  "entities": {
+    "AdminRecord": {
+      "title": "AdminRecord",
+      "description": "Trusted administrator role record keyed by Firebase Auth UID.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the administrator.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "role": {
+          "type": "string",
+          "description": "Role assigned to the administrator.",
+          "enum": ["super_admin", "admin"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the record was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when the record was last updated."
+        }
+      },
+      "required": ["uid", "role", "createdAt", "updatedAt"]
+    },
+    "UserNodeConfig": {
+      "title": "UserNodeConfig",
+      "description": "Per-user persisted cloud node configuration and saved deployment manifests.",
+      "type": "object",
+      "properties": {
+        "ownerUid": {
+          "type": "string",
+          "description": "Firebase Auth UID of the user who owns this configuration.",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "Display name of the user.",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "customRam": {
+          "type": "number",
+          "description": "Selected DDR5 RAM allocation in GB."
+        },
+        "selectedWorkload": {
+          "type": "string",
+          "enum": ["cloud", "highfreq", "baremetal"]
+        },
+        "billingCycle": {
+          "type": "string",
+          "enum": ["monthly", "quarterly", "annual"]
+        },
+        "selectedRegion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "selectedEngine": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "savedManifests": {
+          "type": "array",
+          "description": "Bounded list of saved deployment manifests (up to 20)."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "ownerUid",
+        "displayName",
+        "customRam",
+        "selectedWorkload",
+        "billingCycle",
+        "selectedRegion",
+        "selectedEngine",
+        "savedManifests",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "SiteTextConfig": {
+      "title": "SiteTextConfig",
+      "description": "Persisted website text, copy, headlines, stickers, SEO metadata, keywords, and laws.",
+      "type": "object",
+      "properties": {
+        "authorUid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$"
+        },
+        "theme": {
+          "type": "string",
+          "enum": ["default", "christmas", "halloween", "void", "easter", "cyber"]
+        },
+        "systemStatus": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "latency": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "hubButtonText": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "copyText": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "brandMain": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "brandAccent": { "type": "string", "minLength": 0, "maxLength": 120 },
+        "brandSubtitle": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "pageTitle": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "heroKicker": { "type": "string", "minLength": 1, "maxLength": 400 },
+        "heroDescription": { "type": "string", "minLength": 1, "maxLength": 1200 },
+        "primaryCtaText": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "secondaryCtaText": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "clusterBadgeLabel": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "clusterBadgeValue": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "plansSectionKicker": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "plansSectionTitle": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "plansSectionSubtitle": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "customBuilderTitle": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "nodesSectionKicker": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "nodesSectionTitle": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "nodesSectionSubtitle": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "archSectionKicker": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "archSectionTitle": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "slaSectionKicker": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "slaSectionTitle": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "slaSectionBadge": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "teamSectionTitle": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "teamSectionSubtitle": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "footerCopyright": { "type": "string", "minLength": 1, "maxLength": 300 },
+        "sticker1Line1": { "type": "string", "minLength": 0, "maxLength": 80 },
+        "sticker1Line2": { "type": "string", "minLength": 0, "maxLength": 80 },
+        "sticker1Badge": { "type": "string", "minLength": 0, "maxLength": 40 },
+        "sticker2Text": { "type": "string", "minLength": 0, "maxLength": 120 },
+        "sticker3Emoji": { "type": "string", "minLength": 0, "maxLength": 32 },
+        "sticker3Text": { "type": "string", "minLength": 0, "maxLength": 120 },
+        "sticker4Text": { "type": "string", "minLength": 0, "maxLength": 160 },
+        "loginTitle": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "loginAccent": { "type": "string", "minLength": 0, "maxLength": 120 },
+        "loginSubtitle": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "seoSiteName": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "seoHomeTitle": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "seoHomeDescription": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "seoHomeKeywords": { "type": "string", "minLength": 0, "maxLength": 600 },
+        "seoLoginTitle": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "seoLoginDescription": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "seoLoginKeywords": { "type": "string", "minLength": 0, "maxLength": 600 },
+        "seoAdminTitle": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "seoAdminDescription": { "type": "string", "minLength": 1, "maxLength": 600 },
+        "seoAdminKeywords": { "type": "string", "minLength": 0, "maxLength": 600 },
+        "laws": { "type": "array" },
+        "osImages": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "authorUid",
+        "theme",
+        "systemStatus",
+        "latency",
+        "hubButtonText",
+        "copyText",
+        "brandMain",
+        "brandAccent",
+        "brandSubtitle",
+        "pageTitle",
+        "heroKicker",
+        "heroDescription",
+        "primaryCtaText",
+        "secondaryCtaText",
+        "clusterBadgeLabel",
+        "clusterBadgeValue",
+        "plansSectionKicker",
+        "plansSectionTitle",
+        "plansSectionSubtitle",
+        "customBuilderTitle",
+        "nodesSectionKicker",
+        "nodesSectionTitle",
+        "nodesSectionSubtitle",
+        "archSectionKicker",
+        "archSectionTitle",
+        "slaSectionKicker",
+        "slaSectionTitle",
+        "slaSectionBadge",
+        "teamSectionTitle",
+        "teamSectionSubtitle",
+        "footerCopyright",
+        "sticker1Line1",
+        "sticker1Line2",
+        "sticker1Badge",
+        "sticker2Text",
+        "sticker3Emoji",
+        "sticker3Text",
+        "sticker4Text",
+        "loginTitle",
+        "loginAccent",
+        "loginSubtitle",
+        "seoSiteName",
+        "seoHomeTitle",
+        "seoHomeDescription",
+        "seoHomeKeywords",
+        "seoLoginTitle",
+        "seoLoginDescription",
+        "seoLoginKeywords",
+        "seoAdminTitle",
+        "seoAdminDescription",
+        "seoAdminKeywords",
+        "laws",
+        "osImages",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminRecord" },
+      "description": "Administrator role lookup collection keyed by Firebase Auth UID."
+    },
+    "/user_configs/{userId}": {
+      "schema": { "$ref": "#/entities/UserNodeConfig" },
+      "description": "Per-user persisted cloud node configurations and saved deployment manifests."
+    },
+    "/site_config/{configId}": {
+      "schema": { "$ref": "#/entities/SiteTextConfig" },
+      "description": "Global website text, copy, SEO metadata, and configuration document."
+    }
+  }
+}

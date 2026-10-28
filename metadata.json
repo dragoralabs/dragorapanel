@@ -1,0 +1,8 @@
+{
+  "name": "playit",
+  "description": "Playit: A high-performance Minecraft server platform with integrated creator dashboard and admin verification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

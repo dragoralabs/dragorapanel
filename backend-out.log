@@ -1,0 +1,9 @@
+
+> playit@0.0.0 start
+> tsx server.ts
+
+◇ injected env (0) from .env // tip: ⌘ custom filepath { path: '/custom/path/.env' }
+Server running on http://localhost:3000
+[2m5:43:36 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m5:43:36 AM[22m [36m[1m[vite][22m[39m [32mvite.config.ts changed, restarting server...[39m
+[2m5:43:36 AM[22m [36m[1m[vite][22m[39m server restarted.
