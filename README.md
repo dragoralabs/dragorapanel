@@ -9,8 +9,6 @@ We want to make one thing clear: **DragoraPanel is not going back to being close
 | **2.** The codebase grew beyond 100 MB. | **2.** A more manageable and maintainable system. |
 | **3.** Running the panel locally required significant resources. | **3.** System information and resource monitoring to help you track panel usage. |
 | **4.** Licensing introduced additional management and hosting costs. | **4.** Options to upgrade your panel specifications as your needs grow. |
-| | **5.** The panel hosting itself remains free. Due to licensing and operational costs, free licenses are not currently available. |
-| | **6.** You'll need to self-host your own nodes, as we cannot afford to provide free node hosting. |
 
 ━━━━━━━━━━━━━━━━━━━━━━
 
